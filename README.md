@@ -1,16 +1,23 @@
 # Family Chores
 
-A mobile-first family chore tracker built as a static web app.
+Family Chores is a mobile-first shared chore and rewards app.
 
-## Features
-- Parent and child dashboard views
-- Add, assign, complete, approve, reject, and delete chores
-- Points for approved chores
-- Rewards with point costs
-- Local demo persistence with browser localStorage
-- Responsive mobile/desktop UI
+Features:
+- Supabase email/password accounts
+- Parent creates a family and receives an 8-character family code
+- Children join with the family code
+- Shared online chores and rewards
+- Parent/child roles enforced in PostgreSQL
+- Chore completion -> parent approval -> points
+- Reward requests -> parent approval -> points deducted
+- Row Level Security isolates each family's data
+- GitHub Pages deployment through GitHub Actions
 
-## Run
-Open `index.html` in a browser, or host the repository with GitHub Pages.
+Security:
+- The browser contains only the Supabase publishable key.
+- No service-role key or database password is included in frontend code.
+- Authorization is enforced with Supabase Auth, PostgreSQL RLS, and server-side RPC functions.
 
-> This version is a front-end MVP. It does not provide real multi-user accounts or a shared cloud database.
+Backend project: family-chores in us-east-1.
+
+To use the app, open the GitHub Pages site, create a parent account, create a family, and share the displayed family code with child accounts.
