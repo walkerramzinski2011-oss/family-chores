@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111827">
+<title>Family Chores</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--ink:#172033;--muted:#667085;--line:#e5e7eb;--accent:#2563eb;--good:#16a34a;--warn:#d97706;--danger:#dc2626}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:#111827;color:#fff;padding:18px 20px;position:sticky;top:0;z-index:5}header .bar{max-width:1050px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-weight:800;font-size:20px}.pill{font-size:12px;background:#253047;padding:7px 10px;border-radius:999px}
+main{max-width:1050px;margin:24px auto;padding:0 16px}.hero{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px}.hero h1{margin:0 0 6px;font-size:30px}.muted{color:var(--muted)}
+.tabs{display:flex;gap:8px;overflow:auto;margin-bottom:18px}.tabs button,.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}.tabs button{background:#e8edf5;color:#344054}.tabs button.active{background:var(--accent);color:white}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 2px 8px #1018280d}.stat{font-size:28px;font-weight:800}.label{font-size:13px;color:var(--muted);margin-top:4px}
+.list{display:grid;gap:10px;margin-top:12px}.row{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);padding:13px;border-radius:12px}.row h3,.row p{margin:0}.row p{font-size:13px;color:var(--muted);margin-top:3px}
+.btn.primary{background:var(--accent);color:white}.btn.good{background:#dcfce7;color:#166534}.btn.ghost{background:#eef2f7;color:#344054}.btn.danger{background:#fee2e2;color:#991b1b}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.section{margin-top:16px}.section h2{font-size:18px;margin:0 0 8px}
+form{display:grid;gap:10px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}input,select,textarea{width:100%;padding:11px;border:1px solid #d0d5dd;border-radius:10px;font:inherit;background:#fff}
+.empty{padding:24px;text-align:center;color:var(--muted);border:1px dashed #cbd5e1;border-radius:12px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:11px 15px;border-radius:10px;display:none;z-index:20}
+@media(max-width:760px){.grid{grid-template-columns:1fr 1fr}.hero{align-items:start;flex-direction:column}.formgrid{grid-template-columns:1fr}.row{align-items:flex-start;flex-direction:column}.row .actions{width:100%}.row .actions .btn{flex:1}}
+@media(max-width:460px){.grid{grid-template-columns:1fr}.hero h1{font-size:25px}}
+</style>
+</head>
+<body>
+<header><div class="bar"><div class="logo">Family Chores</div><div class="pill" id="familyBadge">Family dashboard</div></div></header>
+<main>
+<div class="hero"><div><h1>Keep the family on track.</h1><div class="muted">Chores, approvals, points, and rewards in one place.</div></div><button class="btn primary" onclick="resetDemo()">Reset demo</button></div>
+<div class="tabs">
+<button id="parentTab" class="active" onclick="setRole('parent')">Parent</button>
+<button id="childTab" onclick="setRole('child')">Child</button>
+</div>
+<div id="app"></div>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+const KEY='family-chores-demo-v1';
+const starter={children:[{id:1,name:'Alex',points:120},{id:2,name:'Sam',points:80}],chores:[
+{id:1,title:'Make your bed',child:1,points:10,due:'Today',status:'todo'},
+{id:2,title:'Take out the trash',child:2,points:15,due:'Today',status:'pending'},
+{id:3,title:'Clean your room',child:1,points:25,due:'Tomorrow',status:'todo'}],
+rewards:[{id:1,title:'30 minutes extra game time',cost:50},{id:2,title:'Pick dinner',cost:100}],role:'parent'};
+let state=load(); function load(){try{return JSON.parse(localStorage.getItem(KEY))||structuredClone(starter)}catch{return structuredClone(starter)}}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function toast(s){let t=document.getElementById('toast');t.textContent=s;t.style.display='block';clearTimeout(window.tt);window.tt=setTimeout(()=>t.style.display='none',1800)}
+function setRole(r){state.role=r;save();document.getElementById('parentTab').classList.toggle('active',r==='parent');document.getElementById('childTab').classList.toggle('active',r==='child');render()}
+function resetDemo(){localStorage.removeItem(KEY);state=load();state.role='parent';save();render();toast('Demo reset')}
+function childName(id){return state.children.find(c=>c.id===+id)?.name||'Unassigned'}
+function render(){document.getElementById('familyBadge').textContent=state.role==='parent'?'Parent dashboard':'Child dashboard';document.getElementById('app').innerHTML=state.role==='parent'?parentView():childView()}
+function parentView(){let pending=state.chores.filter(c=>c.status==='pending').length;return `
+<div class="grid">
+<div class="card"><div class="stat">${state.chores.length}</div><div class="label">Total chores</div></div>
+<div class="card"><div class="stat">${pending}</div><div class="label">Waiting for approval</div></div>
+<div class="card"><div class="stat">${state.rewards.length}</div><div class="label">Rewards</div></div>
+</div>
+<div class="section card"><h2>Add a chore</h2><form onsubmit="addChore(event)"><div class="formgrid"><input id="title" required placeholder="Chore name"><select id="child"><option value="">Assign child...</option>${state.children.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select><input id="points" type="number" min="1" value="10" placeholder="Points"><input id="due" value="Today" placeholder="Due date"></div><button class="btn primary">Add chore</button></form></div>
+<div class="section card"><h2>Chore approvals</h2><div class="list">${state.chores.map(c=>`<div class="row"><div><h3>${esc(c.title)}</h3><p>${esc(childName(c.child))} · ${c.points} points · ${esc(c.due)}</p></div><div class="actions">${c.status==='pending'?'<button class="btn good" onclick="approve('+c.id+')">Approve</button><button class="btn danger" onclick="reject('+c.id+')">Reject</button>':`<span class="pill">${c.status==='done'?'Completed':'Open'}</span>`}<button class="btn ghost" onclick="deleteChore(${c.id})">Delete</button></div></div>`).join('')||'<div class="empty">No chores yet.</div>'}</div></div>
+<div class="section card"><h2>Rewards</h2><form onsubmit="addReward(event)"><div class="formgrid"><input id="reward" required placeholder="Reward name"><input id="cost" type="number" min="1" value="50" placeholder="Point cost"></div><button class="btn primary">Add reward</button></form><div class="list">${state.rewards.map(r=>`<div class="row"><div><h3>${esc(r.title)}</h3><p>${r.cost} points</p></div><button class="btn ghost" onclick="deleteReward(${r.id})">Delete</button></div>`).join('')}</div></div>`}
+function childView(){let c=state.children[0];let my=state.chores.filter(x=>x.child===c.id);return `
+<div class="grid"><div class="card"><div class="stat">${c.points}</div><div class="label">Your points</div></div><div class="card"><div class="stat">${my.filter(x=>x.status==='todo').length}</div><div class="label">Open chores</div></div><div class="card"><div class="stat">${state.rewards.length}</div><div class="label">Rewards available</div></div></div>
+<div class="section card"><h2>Your chores</h2><div class="list">${my.map(x=>`<div class="row"><div><h3>${esc(x.title)}</h3><p>${x.points} points · ${esc(x.due)}</p></div><div class="actions"><span class="pill">${x.status}</span>${x.status==='todo'?'<button class="btn primary" onclick="complete('+x.id+')">Mark complete</button>':''}</div></div>`).join('')||'<div class="empty">No chores assigned.</div>'}</div></div>
+<div class="section card"><h2>Rewards</h2><div class="list">${state.rewards.map(r=>`<div class="row"><div><h3>${esc(r.title)}</h3><p>Costs ${r.cost} points</p></div><button class="btn ${c.points>=r.cost?'good':'ghost'}" ${c.points<r.cost?'disabled':''} onclick="redeem(${r.id})">${c.points>=r.cost?'Request':'Need more points'}</button></div>`).join('')}</div></div>`}
+function addChore(e){e.preventDefault();let child=+document.getElementById('child').value;if(!child)return toast('Choose a child');state.chores.push({id:Date.now(),title:document.getElementById('title').value,child,points:+document.getElementById('points').value||10,due:document.getElementById('due').value||'Today',status:'todo'});save();render();toast('Chore added')}
+function addReward(e){e.preventDefault();state.rewards.push({id:Date.now(),title:document.getElementById('reward').value,cost:+document.getElementById('cost').value||50});save();render();toast('Reward added')}
+function approve(id){let x=state.chores.find(c=>c.id===id);x.status='done';let child=state.children.find(c=>c.id===x.child);if(child)child.points+=x.points;save();render();toast('Approved and points awarded')}
+function reject(id){let x=state.chores.find(c=>c.id===id);x.status='todo';save();render();toast('Sent back to child')}
+function complete(id){let x=state.chores.find(c=>c.id===id);x.status='pending';save();render();toast('Sent for parent approval')}
+function redeem(id){let r=state.rewards.find(x=>x.id===id),c=state.children[0];if(c.points<r.cost)return; c.points-=r.cost;save();render();toast('Reward requested')}
+function deleteChore(id){state.chores=state.chores.filter(x=>x.id!==id);save();render();toast('Chore deleted')}
+function deleteReward(id){state.rewards=state.rewards.filter(x=>x.id!==id);save();render();toast('Reward deleted')}
+render();
+</script>
+</body>
+</html>
