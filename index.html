@@ -5,103 +5,141 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Family Chores</title>
 <style>
-:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f5f7fb;color:#111827}
-*{box-sizing:border-box}body{margin:0}header{background:#111827;color:white;padding:16px 20px}
-main{max-width:1050px;margin:auto;padding:20px}.card{background:white;border:1px solid #e5e7eb;border-radius:16px;padding:18px;margin:14px 0;box-shadow:0 2px 8px #0000000d}
-h1,h2,h3{margin-top:0}.muted{color:#6b7280}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
-input,select{width:100%;padding:11px;border:1px solid #d1d5db;border-radius:10px;margin:5px 0 12px;font:inherit}
-button{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;background:#e5e7eb}
-.primary{background:#2563eb;color:white}.good{background:#dcfce7;color:#166534}.bad{background:#fee2e2;color:#991b1b}.row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:11px 0;border-top:1px solid #eee}.actions{display:flex;gap:7px;flex-wrap:wrap}
-.hidden{display:none}.msg{padding:10px;border-radius:10px;margin:10px 0;background:#eef2ff}.error{background:#fee2e2;color:#991b1b}.success{background:#dcfce7;color:#166534}
-.stat{font-size:28px;font-weight:800}.code{font-family:monospace;font-size:20px;font-weight:800;letter-spacing:2px}
+body{margin:0;font-family:system-ui,sans-serif;background:#f4f6fa;color:#111827}
+header{background:#111827;color:#fff;padding:18px;font-size:20px;font-weight:800}
+main{max-width:1000px;margin:auto;padding:20px}.card{background:#fff;border:1px solid #ddd;border-radius:14px;padding:18px;margin:14px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+input,select{width:100%;padding:11px;margin:6px 0 12px;border:1px solid #bbb;border-radius:9px;box-sizing:border-box}
+button{padding:10px 14px;border:0;border-radius:9px;font-weight:700;cursor:pointer;margin:3px}
+.primary{background:#2563eb;color:#fff}.good{background:#16a34a;color:#fff}.bad{background:#dc2626;color:#fff}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 0;border-top:1px solid #eee}
+.muted{color:#667085}.msg{padding:10px;border-radius:9px;margin-top:10px;background:#eef2ff}.error{background:#fee2e2;color:#991b1b}
+.code{font:700 20px monospace;letter-spacing:2px}
+#app{min-height:300px}
 </style>
 </head>
 <body>
-<header><strong>Family Chores</strong><span id="status" style="float:right">Starting…</span></header>
-<main><div id="app"></div></main>
-<script type="module">
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+<header>Family Chores <span id="status" style="float:right;font-size:14px;font-weight:500">Loading…</span></header>
+<main>
+<div id="app">
+<div class="card">
+<h1>Family Chores</h1>
+<p class="muted">Shared chores, points, approvals, and rewards.</p>
+<p id="startup">Starting the app…</p>
+</div>
+</div>
+</main>
 
-const SUPABASE_URL="https://ttmjhfizzzkkhibodmaj.supabase.co";
-const SUPABASE_KEY="sb_publishable_fFDLRkbBmyQKs9hrP1Zi8w_9nYuZRJD";
-const db=createClient(SUPABASE_URL,SUPABASE_KEY);
-let session=null, me=null, family=null, members=[], chores=[], rewards=[], requests=[];
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+"use strict";
+const URL="https://ttmjhfizzzkkhibodmaj.supabase.co";
+const KEY="sb_publishable_fFDLRkbBmyQKs9hrP1Zi8w_9nYuZRJD";
+const app=document.getElementById("app"), status=document.getElementById("status");
+let db,session,me,family,members=[],chores=[],rewards=[],requests=[];
 
-const $=id=>document.getElementById(id);
-const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
-function setStatus(x){$("status").textContent=x}
-function message(text,ok=false){return '<div class="msg '+(ok?"success":"error")+'">'+esc(text)+'</div>'}
+function esc(x){return String(x??"").replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function msg(x,error){return '<div class="msg '+(error?"error":"")+'">'+esc(x)+'</div>'}
+function setStatus(x){status.textContent=x}
 
-async function start(){
-  try{
-    const r=await db.auth.getSession(); session=r.data.session;
-    await render();
-    db.auth.onAuthStateChange((_e,s)=>{session=s;setTimeout(render,0)});
-  }catch(e){$("app").innerHTML=message("App startup failed: "+e.message)}
-}
-async function render(){
-  if(!session){setStatus("Not signed in");return authUI()}
-  setStatus(session.user.email||"Signed in");
-  const r=await db.from("family_members").select("*").eq("user_id",session.user.id).maybeSingle();
-  if(r.error) return $("app").innerHTML=message(r.error.message);
-  if(!r.data){setStatus("Choose a family");return familyUI()}
-  me=r.data;
-  const f=await db.from("families").select("*").eq("id",me.family_id).single();
-  if(f.error)return $("app").innerHTML=message(f.error.message);
-  family=f.data;
-  await loadData();
-  appUI();
-}
-function authUI(){
- $("app").innerHTML='<div class="card"><h1>Family Chores</h1><p class="muted">Shared chores, points, approvals, and rewards.</p><form id="auth"><label>Email<input id="email" type="email" required></label><label>Password<input id="pass" type="password" minlength="6" required></label><div class="actions"><button class="primary" type="submit" id="authbtn">Sign in</button><button type="button" id="toggle">Create account</button></div><div id="amsg"></div></form></div>';
+function showAuth(){
+ setStatus("Sign in");
+ app.innerHTML='<div class="card"><h1>Family Chores</h1><p class="muted">Sign in or create an account.</p><form id="auth"><label>Email<input id="email" type="email" required></label><label>Password<input id="password" type="password" minlength="6" required></label><button class="primary" id="authBtn">Sign in</button><button type="button" id="switch">Create account</button><div id="authMsg"></div></form></div>';
  let signup=false;
- $("toggle").onclick=()=>{signup=!signup;$("authbtn").textContent=signup?"Create account":"Sign in";$("toggle").textContent=signup?"I already have an account":"Create account"};
- $("auth").onsubmit=async e=>{e.preventDefault();$("amsg").textContent="Working…";let r=signup?await db.auth.signUp({email:$("email").value,password:$("pass").value}):await db.auth.signInWithPassword({email:$("email").value,password:$("pass").value});$("amsg").innerHTML=r.error?message(r.error.message):message(signup?"Account created. Check your email if confirmation is required.":"Signed in.",true)}
+ document.getElementById("switch").onclick=function(){signup=!signup;document.getElementById("authBtn").textContent=signup?"Create account":"Sign in";this.textContent=signup?"I already have an account":"Create account"};
+ document.getElementById("auth").onsubmit=async function(e){
+  e.preventDefault();document.getElementById("authMsg").innerHTML="Working…";
+  let r=signup?await db.auth.signUp({email:email.value,password:password.value}):await db.auth.signInWithPassword({email:email.value,password:password.value});
+  document.getElementById("authMsg").innerHTML=r.error?msg(r.error.message,true):msg(signup?"Account created. Check your email if confirmation is enabled.":"Signed in.",false);
+  if(!r.error&&!signup) setTimeout(render,300);
+ };
 }
-function familyUI(){
- $("app").innerHTML='<div class="card"><h1>Set up your family</h1><p class="muted">Create a family as a parent, or join one as a child.</p><div class="grid"><div><h2>Create family</h2><form id="create"><input id="fname" placeholder="Family name" required><input id="pname" placeholder="Your name" required><button class="primary">Create as parent</button></form><div id="cmsg"></div></div><div><h2>Join family</h2><form id="join"><input id="code" placeholder="Family code" maxlength="8" required><input id="jname" placeholder="Your name" required><button>Join as child</button></form><div id="jmsg"></div></div></div><button id="out">Sign out</button></div>';
- $("create").onsubmit=async e=>{e.preventDefault();let r=await db.rpc("create_family",{p_name:$("fname").value,p_display_name:$("pname").value});$("cmsg").innerHTML=r.error?message(r.error.message):message("Family created. Your code is "+r.data.join_code,true);if(!r.error)setTimeout(render,500)};
- $("join").onsubmit=async e=>{e.preventDefault();let r=await db.rpc("join_family",{p_code:$("code").value.trim(),p_display_name:$("jname").value});$("jmsg").innerHTML=r.error?message(r.error.message):message("Joined family.",true);if(!r.error)setTimeout(render,500)};
- $("out").onclick=()=>db.auth.signOut();
+
+function familyScreen(){
+ setStatus("Choose family");
+ app.innerHTML='<div class="card"><h1>Set up your family</h1><div class="grid"><div><h2>Create a family</h2><form id="create"><input id="familyName" placeholder="Family name" required><input id="yourName" placeholder="Your name" required><button class="primary">Create as parent</button></form><div id="createMsg"></div></div><div><h2>Join a family</h2><form id="join"><input id="joinCode" placeholder="Family code" maxlength="8" required><input id="childName" placeholder="Your name" required><button>Join as child</button></form><div id="joinMsg"></div></div></div><button id="logout">Sign out</button></div>';
+ document.getElementById("create").onsubmit=async function(e){e.preventDefault();let r=await db.rpc("create_family",{p_name:familyName.value,p_display_name:yourName.value});createMsg.innerHTML=r.error?msg(r.error.message,true):msg("Family created. Code: "+r.data.join_code);if(!r.error)setTimeout(render,500)};
+ document.getElementById("join").onsubmit=async function(e){e.preventDefault();let r=await db.rpc("join_family",{p_code:joinCode.value.trim(),p_display_name:childName.value});joinMsg.innerHTML=r.error?msg(r.error.message,true):msg("Joined family.");if(!r.error)setTimeout(render,500)};
+ document.getElementById("logout").onclick=()=>db.auth.signOut();
 }
-async function loadData(){
+
+async function load(){
  const f=family.id;
- const [a,b,c,d]=await Promise.all([
-  db.from("family_members").select("*").eq("family_id",f).order("role"),
+ const rs=await Promise.all([
+  db.from("family_members").select("*").eq("family_id",f),
   db.from("chores").select("*").eq("family_id",f).order("created_at",{ascending:false}),
   db.from("rewards").select("*").eq("family_id",f).order("cost"),
   db.from("reward_requests").select("*").eq("family_id",f).order("created_at",{ascending:false})
  ]);
- members=a.data||[];chores=b.data||[];rewards=c.data||[];requests=d.data||[];
- const err=[a,b,c,d].find(x=>x.error);if(err)throw err.error;
+ const bad=rs.find(x=>x.error);if(bad)throw bad.error;
+ members=rs[0].data||[];chores=rs[1].data||[];rewards=rs[2].data||[];requests=rs[3].data||[];
 }
-function appUI(){
+function name(id){let x=members.find(m=>m.user_id===id);return x?x.display_name:"Unknown"}
+
+async function render(){
+ if(!session)return showAuth();
+ const m=await db.from("family_members").select("*").eq("user_id",session.user.id).maybeSingle();
+ if(m.error)throw m.error;
+ if(!m.data)return familyScreen();
+ me=m.data;
+ const f=await db.from("families").select("*").eq("id",me.family_id).single();
+ if(f.error)throw f.error;
+ family=f.data;await load();dashboard();
+}
+
+function dashboard(){
  const parent=me.role==="parent";
- $("app").innerHTML='<div class="hero"><div><h1>'+(parent?"Parent dashboard":"My chores")+'</h1><p class="muted">Family: '+esc(family.name)+'</p></div><div class="actions">'+(parent?'<span class="code">'+esc(family.join_code)+'</span>':'')+'<button id="out">Sign out</button></div></div><div class="grid"><div class="card"><div class="stat">'+(parent?chores.length:me.points)+'</div><div class="muted">'+(parent?"Total chores":"Your points")+'</div></div><div class="card"><div class="stat">'+chores.filter(c=>c.status==="pending").length+'</div><div class="muted">Waiting for approval</div></div><div class="card"><div class="stat">'+rewards.length+'</div><div class="muted">Rewards</div></div></div>'+ (parent?parentUI():childUI());
- $("out").onclick=()=>db.auth.signOut();
+ setStatus(parent?"Parent":"Child");
+ let top='<div class="card"><h1>'+(parent?"Parent dashboard":"My chores")+'</h1><p class="muted">Family: '+esc(family.name)+'</p>'+(parent?'<p>Family code: <span class="code">'+esc(family.join_code)+'</span></p>':'<p><b>'+me.points+'</b> points</p>')+'<button id="logout">Sign out</button></div>';
+ app.innerHTML=top+(parent?parentUI():childUI());
+ document.getElementById("logout").onclick=()=>db.auth.signOut();
 }
+
 function parentUI(){
- const kids=members.filter(x=>x.role==="child");
- return '<div class="grid"><div class="card"><h2>Add chore</h2><form id="add"><input id="ct" placeholder="Chore name" required><select id="ca" required><option value="">Assign child…</option>'+kids.map(k=>'<option value="'+k.user_id+'">'+esc(k.display_name)+'</option>').join("")+'</select><input id="cp" type="number" min="1" max="1000" value="10"><input id="cd" type="date"><button class="primary">Add chore</button></form><div id="amsg"></div></div><div class="card"><h2>Add reward</h2><form id="reward"><input id="rt" placeholder="Reward name" required><input id="rc" type="number" min="1" value="50"><button class="primary">Add reward</button></form><div id="rmsg"></div></div></div><div class="card"><h2>Chores</h2>'+ (chores.length?chores.map(c=>'<div class="row"><div><b>'+esc(c.title)+'</b><div class="muted">'+esc(name(c.assigned_to))+' · '+c.points+' points · '+esc(c.status)+'</div></div><div class="actions">'+(c.status==="pending"?'<button class="good" onclick="approve(\''+c.id+'\')">Approve</button><button class="bad" onclick="reject(\''+c.id+'\')">Reject</button>':'')+'<button onclick="delChore(\''+c.id+'\')">Delete</button></div></div>').join(""):'<p class="muted">No chores yet.</p>')+'</div><div class="card"><h2>Rewards</h2>'+ (rewards.length?rewards.map(r=>'<div class="row"><div><b>'+esc(r.title)+'</b><div class="muted">'+r.cost+' points</div></div><button onclick="delReward(\''+r.id+'\')">Delete</button></div>').join(""):'<p class="muted">No rewards yet.</p>')+'</div><div class="card"><h2>Reward requests</h2>'+pendingRequestsUI()+'</div>';
+ let kids=members.filter(x=>x.role==="child");
+ return '<div class="grid"><div class="card"><h2>Add chore</h2><form id="addChore"><input id="title" placeholder="Chore" required><select id="assigned" required><option value="">Choose child</option>'+kids.map(k=>'<option value="'+k.user_id+'">'+esc(k.display_name)+'</option>').join("")+'</select><input id="points" type="number" min="1" value="10"><button class="primary">Add chore</button></form></div><div class="card"><h2>Add reward</h2><form id="addReward"><input id="rewardTitle" placeholder="Reward" required><input id="cost" type="number" min="1" value="50"><button class="primary">Add reward</button></form></div></div><div class="card"><h2>Chores</h2>'+choreRows()+'</div><div class="card"><h2>Rewards</h2>'+rewardRows(true)+'</div><div class="card"><h2>Reward requests</h2>'+requestRows()+'</div>';
 }
-function pendingRequestsUI(){const p=requests.filter(x=>x.status==="pending");return p.length?p.map(q=>{let r=rewards.find(x=>x.id===q.reward_id);return '<div class="row"><div><b>'+esc(r?.title||"Reward")+'</b><div class="muted">'+esc(name(q.child_id))+' · '+(r?.cost||0)+' points</div></div><div class="actions"><button class="good" onclick="approveReq(\''+q.id+'\')">Approve</button><button class="bad" onclick="rejectReq(\''+q.id+'\')">Reject</button></div></div>'}).join(""):'<p class="muted">No pending requests.</p>'}
-function childUI(){const mine=chores.filter(c=>c.assigned_to===session.user.id);return '<div class="card"><h2>My chores</h2>'+ (mine.length?mine.map(c=>'<div class="row"><div><b>'+esc(c.title)+'</b><div class="muted">'+c.points+' points · '+esc(c.status)+'</div></div>'+(c.status==="todo"?'<button class="primary" onclick="complete(\''+c.id+'\')">Mark complete</button>':'')+'</div>').join(""):'<p class="muted">No chores assigned.</p>')+'</div><div class="card"><h2>Rewards</h2>'+ (rewards.length?rewards.map(r=>'<div class="row"><div><b>'+esc(r.title)+'</b><div class="muted">'+r.cost+' points</div></div><button '+(me.points<r.cost?"disabled":"")+' onclick="requestReward(\''+r.id+'\')">Request</button></div>').join(""):'<p class="muted">No rewards yet.</p>')+'</div>'}
-function name(id){return members.find(x=>x.user_id===id)?.display_name||"Unknown"}
-async function refresh(msg){if(msg)alert(msg);await loadData();appUI()}
-async function rpc(fn,key,id,msg){let r=await db.rpc(fn,{[key]:id});if(r.error)alert(r.error.message);else refresh(msg)}
-window.complete=id=>rpc("complete_chore","p_chore_id",id,"Sent for approval");
-window.approve=id=>rpc("approve_chore","p_chore_id",id,"Approved");
-window.reject=id=>rpc("reject_chore","p_chore_id",id,"Rejected");
-window.approveReq=id=>rpc("approve_reward_request","p_request_id",id,"Reward approved");
-window.rejectReq=id=>rpc("reject_reward_request","p_request_id",id,"Request rejected");
-window.requestReward=id=>rpc("request_reward","p_reward_id",id,"Reward requested");
-window.delChore=async id=>{let r=await db.from("chores").delete().eq("id",id);if(r.error)alert(r.error.message);else refresh("Chore deleted")};
-window.delReward=async id=>{let r=await db.from("rewards").delete().eq("id",id);if(r.error)alert(r.error.message);else refresh("Reward deleted")};
-document.addEventListener("submit",async e=>{
- if(e.target.id==="add"){e.preventDefault();let r=await db.from("chores").insert({family_id:family.id,title:ct.value.trim(),assigned_to:ca.value,points:+cp.value,due_date:cd.value||null,created_by:session.user.id});$("amsg").innerHTML=r.error?message(r.error.message):message("Chore added.",true);if(!r.error){e.target.reset();await refresh()}}
- if(e.target.id==="reward"){e.preventDefault();let r=await db.from("rewards").insert({family_id:family.id,title:rt.value.trim(),cost:+rc.value,created_by:session.user.id});$("rmsg").innerHTML=r.error?message(r.error.message):message("Reward added.",true);if(!r.error){e.target.reset();await refresh()}}
+function choreRows(){
+ if(!chores.length)return '<p class="muted">No chores yet.</p>';
+ return chores.map(c=>'<div class="row"><div><b>'+esc(c.title)+'</b><div class="muted">'+esc(name(c.assigned_to))+' · '+c.points+' points · '+esc(c.status)+'</div></div><div>'+(c.status==="pending"?'<button class="good" onclick="act("approve_chore","'+c.id+'")">Approve</button><button class="bad" onclick="act("reject_chore","'+c.id+'")">Reject</button>':'')+'</div></div>').join("");
+}
+function rewardRows(request){
+ if(!rewards.length)return '<p class="muted">No rewards yet.</p>';
+ return rewards.map(r=>'<div class="row"><div><b>'+esc(r.title)+'</b><div class="muted">'+r.cost+' points</div></div>'+(request?'<button onclick="rewardReq("'+r.id+'")">Delete</button>':'')+'</div>').join("");
+}
+function requestRows(){
+ let p=requests.filter(x=>x.status==="pending");
+ if(!p.length)return '<p class="muted">No pending requests.</p>';
+ return p.map(q=>{let r=rewards.find(x=>x.id===q.reward_id);return '<div class="row"><div><b>'+esc(r?r.title:"Reward")+'</b><div class="muted">'+esc(name(q.child_id))+'</div></div><div><button class="good" onclick="act("approve_reward_request","'+q.id+'")">Approve</button><button class="bad" onclick="act("reject_reward_request","'+q.id+'")">Reject</button></div></div>'}).join("");
+}
+function childUI(){
+ let mine=chores.filter(c=>c.assigned_to===session.user.id);
+ return '<div class="card"><h2>My chores</h2>'+(mine.length?mine.map(c=>'<div class="row"><div><b>'+esc(c.title)+'</b><div class="muted">'+c.points+' points · '+esc(c.status)+'</div></div>'+(c.status==="todo"?'<button class="primary" onclick="act("complete_chore","'+c.id+'")">Mark complete</button>':'')+'</div>').join(""):'<p class="muted">No chores assigned.</p>')+'</div><div class="card"><h2>Rewards</h2>'+rewardRows(false)+'</div>';
+}
+
+window.act=async function(fn,id){
+ const key=fn==="approve_reward_request"||fn==="reject_reward_request"?"p_request_id":"p_chore_id";
+ let r=await db.rpc(fn,{[key]:id});if(r.error)alert(r.error.message);else{await load();dashboard()}
+};
+window.rewardReq=async function(id){let r=await db.rpc("request_reward",{p_reward_id:id});if(r.error)alert(r.error.message);else{await load();dashboard()}};
+
+document.addEventListener("submit",async function(e){
+ if(e.target.id==="addChore"){e.preventDefault();let r=await db.from("chores").insert({family_id:family.id,title:title.value.trim(),assigned_to:assigned.value,points:+points.value,created_by:session.user.id});if(r.error)alert(r.error.message);else{await load();dashboard()}}
+ if(e.target.id==="addReward"){e.preventDefault();let r=await db.from("rewards").insert({family_id:family.id,title:rewardTitle.value.trim(),cost:+cost.value,created_by:session.user.id});if(r.error)alert(r.error.message);else{await load();dashboard()}}
 });
+
+async function start(){
+ try{
+  if(!window.supabase){throw new Error("The Supabase library did not load. Refresh the page or try another browser.")};
+  db=window.supabase.createClient(URL,KEY);
+  const r=await db.auth.getSession();session=r.data.session;await render();
+  db.auth.onAuthStateChange(function(_e,s){session=s;setTimeout(function(){render().catch(showError)},0)});
+ }catch(e){showError(e)}
+}
+function showError(e){setStatus("Error");app.innerHTML='<div class="card"><h1>Family Chores</h1>'+msg(e.message||String(e),true)+'<button onclick="location.reload()">Reload</button></div>'}
 start();
+})();
 </script>
 </body>
 </html>
