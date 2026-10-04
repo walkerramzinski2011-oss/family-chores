@@ -29,6 +29,8 @@ jobs:
         run: node scripts/compact-ui.cjs
       - name: Add collapsible dashboard sections
         run: node scripts/collapsible-ui.cjs
+      - name: Add child chore calendar
+        run: node scripts/calendar-ui.cjs
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload site
