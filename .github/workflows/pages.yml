@@ -27,6 +27,8 @@ jobs:
         run: node scripts/patch-auth.cjs
       - name: Apply compact UI styling
         run: node scripts/compact-ui.cjs
+      - name: Add collapsible dashboard sections
+        run: node scripts/collapsible-ui.cjs
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload site
