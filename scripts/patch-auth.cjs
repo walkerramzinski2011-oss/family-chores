@@ -21,5 +21,13 @@ if (!html.includes(oldSignUp)) {
 }
 html = html.replace(oldSignUp, newSignUp);
 
+const rewardFunction = /function rewardRows\(request\)\{[\s\S]*?\}\nfunction requestRows/;
+const newRewardFunction = 'function rewardRows(request){if(!rewards.length)return \'<p class="muted">No rewards yet.</p>\';return rewards.map(r=>\'<div class="row"><div><b>\'+esc(r.title)+\'</b><div class="muted">\'+r.cost+\' points</div></div><div>\'+(request?\'<button onclick="rewardReq(\\\'\'+r.id+\'\\\')">Delete</button>\':\'<button class="primary" onclick="rewardReq(\\\'\'+r.id+\'\\\')">Choose</button>\')+\'</div></div>\').join("")}\nfunction requestRows';
+
+if (!rewardFunction.test(html)) {
+  throw new Error("Expected reward list renderer was not found; refusing to make an unsafe reward patch.");
+}
+html = html.replace(rewardFunction, newRewardFunction);
+
 fs.writeFileSync(file, html);
-console.log("Patched Supabase auth for GitHub Pages:", site);
+console.log("Patched GitHub Pages auth and child reward selection:", site);
