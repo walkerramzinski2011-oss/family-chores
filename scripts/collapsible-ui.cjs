@@ -22,13 +22,20 @@ if (!html.includes(".collapsible-card{")) {
 const js = `
 function enhanceCollapsibleSections(){
   const cards=[...document.querySelectorAll("#app .card")];
-  cards.forEach(card=>{
+  const storageKey="familyChores.collapsedSections";
+
+  let saved={};
+  try{ saved=JSON.parse(localStorage.getItem(storageKey)||"{}")||{}; }catch(e){ saved={}; }
+
+  cards.forEach((card,index)=>{
     if(card.dataset.collapsibleReady==="1") return;
     const heading=card.querySelector(":scope > h2");
     if(!heading) return;
 
     card.dataset.collapsibleReady="1";
     card.classList.add("collapsible-card");
+
+    const sectionKey=(heading.textContent||"").trim()+"::"+index;
 
     const body=document.createElement("div");
     body.className="collapsible-body";
@@ -50,6 +57,8 @@ function enhanceCollapsibleSections(){
       card.classList.toggle("is-collapsed",collapsed);
       toggle.textContent=collapsed?"Expand":"Collapse";
       toggle.setAttribute("aria-expanded",String(!collapsed));
+      saved[sectionKey]=collapsed;
+      try{ localStorage.setItem(storageKey,JSON.stringify(saved)); }catch(e){}
     };
 
     toggle.onclick=()=>{
@@ -59,6 +68,10 @@ function enhanceCollapsibleSections(){
     head.appendChild(toggle);
     card.appendChild(head);
     card.appendChild(body);
+
+    if(saved[sectionKey]===true){
+      setState(true);
+    }
   });
 }
 `;
@@ -71,9 +84,11 @@ if (!html.includes("function enhanceCollapsibleSections()")) {
 
 const renderMarker = 'app.innerHTML=top+(parent?parentUI():childUI());';
 if (!html.includes(renderMarker)) throw new Error("Could not find dashboard render marker");
-if (!html.includes('enhanceCollapsibleSections();', html.indexOf(renderMarker), html.indexOf(renderMarker)+renderMarker.length+100)) {
+
+const oldCall = 'app.innerHTML=top+(parent?parentUI():childUI());enhanceCollapsibleSections();';
+if (!html.includes(oldCall)) {
   html = html.replace(renderMarker, renderMarker + 'enhanceCollapsibleSections();');
 }
 
 fs.writeFileSync(file, html);
-console.log("Added collapsible dashboard sections.");
+console.log("Updated collapsible sections to remember open/closed state across dashboard refreshes.");
