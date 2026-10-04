@@ -3,11 +3,8 @@ const fs = require("fs");
 const file = "index.html";
 let html = fs.readFileSync(file, "utf8");
 
-const marker = "<!-- FAMILY CHORES COLLAPSIBLE SECTIONS -->";
-if (html.includes(marker)) {
-  console.log("Collapsible sections already injected.");
-  process.exit(0);
-}
+const markerStart = "<!-- FAMILY CHORES COLLAPSIBLE SECTIONS -->";
+const markerEnd = "<!-- /FAMILY CHORES COLLAPSIBLE SECTIONS -->";
 
 const css = [
   "<style id=\"family-chores-collapsible-css\">",
@@ -23,64 +20,63 @@ const css = [
 ].join("\n");
 
 const js = [
-  '<script id="family-chores-collapsible-script">',
+  "<script id=\"family-chores-collapsible-script\">",
   "(function(){",
-  '  const storageKey="familyChores.collapsedSections";',
+  "  const storageKey = \"familyChores.collapsedSections\";",
   "  function readSaved(){",
-  '    try{return JSON.parse(localStorage.getItem(storageKey)||"{}")||{};}catch(e){return {};}',
+  "    try { return JSON.parse(localStorage.getItem(storageKey) || \"{}\") || {}; } catch(e) { return {}; }",
   "  }",
   "  function writeSaved(saved){",
-  "    try{localStorage.setItem(storageKey,JSON.stringify(saved));}catch(e){}",
+  "    try { localStorage.setItem(storageKey, JSON.stringify(saved)); } catch(e) {}",
   "  }",
   "  function enhance(){",
-  '    const app=document.getElementById("app");',
-  "    if(!app)return;",
-  "    const saved=readSaved();",
-  '    const cards=[...app.children].filter(function(el){return el.classList&&el.classList.contains("card");});',
-  "    cards.forEach(function(card){",
-  '      if(card.dataset.collapsibleReady==="1")return;',
-  '      const heading=[...card.children].find(function(el){return el.tagName==="H2";});',
-  "      if(!heading)return;",
-  '      card.dataset.collapsibleReady="1";',
-  '      card.classList.add("collapsible-card");',
-  '      const key=(card.getAttribute("data-collapse-key")||heading.textContent||"").trim();',
-  '      const body=document.createElement("div");',
-  '      body.className="collapsible-body";',
-  "      [...card.children].forEach(function(child){if(child!==heading)body.appendChild(child);});",
-  '      const head=document.createElement("div");',
-  '      head.className="collapsible-head";',
+  "    const app = document.getElementById(\"app\");",
+  "    if(!app) return;",
+  "    const saved = readSaved();",
+  "    Array.from(app.children).forEach(function(card, index){",
+  "      if(!card.classList || !card.classList.contains(\"card\") || card.dataset.collapsibleReady === \"1\") return;",
+  "      const heading = Array.from(card.children).find(function(el){ return el.tagName === \"H2\"; });",
+  "      if(!heading) return;",
+  "      card.dataset.collapsibleReady = \"1\";",
+  "      card.classList.add(\"collapsible-card\");",
+  "      const key = (card.getAttribute(\"data-collapse-key\") || heading.textContent || \"section\").trim() + \"::\" + index;",
+  "      const body = document.createElement(\"div\");",
+  "      body.className = \"collapsible-body\";",
+  "      Array.from(card.children).forEach(function(child){ if(child !== heading) body.appendChild(child); });",
+  "      const head = document.createElement(\"div\");",
+  "      head.className = \"collapsible-head\";",
   "      head.appendChild(heading);",
-  '      const toggle=document.createElement("button");',
-  '      toggle.type="button";',
-  '      toggle.className="collapse-toggle";',
-  "      function setState(collapsed,save){",
-  "        card.classList.toggle("is-collapsed",collapsed);",
-  "        body.hidden=collapsed;",
-  '        toggle.textContent=collapsed?"Expand":"Collapse";',
-  '        toggle.setAttribute("aria-expanded",collapsed?"false":"true");',
-  "        if(save){saved[key]=collapsed;writeSaved(saved);}",
+  "      const toggle = document.createElement(\"button\");",
+  "      toggle.type = \"button\";",
+  "      toggle.className = \"collapse-toggle\";",
+  "      function setState(collapsed, save){",
+  "        card.classList.toggle(\"is-collapsed\", collapsed);",
+  "        body.hidden = collapsed;",
+  "        toggle.textContent = collapsed ? \"Expand\" : \"Collapse\";",
+  "        toggle.setAttribute(\"aria-expanded\", collapsed ? \"false\" : \"true\");",
+  "        if(save){ saved[key] = collapsed; writeSaved(saved); }",
   "      }",
-  '      toggle.addEventListener("click",function(event){',
+  "      toggle.addEventListener(\"click\", function(event){",
   "        event.preventDefault();",
   "        event.stopPropagation();",
-  "        setState(!body.hidden,true);",
+  "        setState(!body.hidden, true);",
   "      });",
   "      head.appendChild(toggle);",
   "      card.appendChild(head);",
   "      card.appendChild(body);",
-  "      setState(saved[key]===true,false);",
+  "      setState(saved[key] === true, false);",
   "    });",
   "  }",
-  "  let scheduled=false;",
+  "  let scheduled = false;",
   "  function schedule(){",
-  "    if(scheduled)return;",
-  "    scheduled=true;",
-  "    requestAnimationFrame(function(){scheduled=false;enhance();});",
+  "    if(scheduled) return;",
+  "    scheduled = true;",
+  "    requestAnimationFrame(function(){ scheduled = false; enhance(); });",
   "  }",
   "  function start(){",
-  '    const app=document.getElementById("app");',
-  "    if(!app){setTimeout(start,100);return;}",
-  "    new MutationObserver(schedule).observe(app,{childList:true,subtree:true});",
+  "    const app = document.getElementById(\"app\");",
+  "    if(!app){ setTimeout(start, 100); return; }",
+  "    new MutationObserver(schedule).observe(app, {childList:true, subtree:true});",
   "    enhance();",
   "  }",
   "  start();",
@@ -88,8 +84,16 @@ const js = [
   "</script>"
 ].join("\n");
 
-html = html.replace("</head>", css + "\n</head>");
-html = html.replace("</body>", marker + "\n" + js + "\n</body>");
+const block = markerStart + "\n" + css + "\n" + js + "\n" + markerEnd;
+
+const start = html.indexOf(markerStart);
+const end = html.indexOf(markerEnd);
+if(start !== -1 && end !== -1 && end > start){
+  html = html.slice(0, start) + block + html.slice(end + markerEnd.length);
+} else {
+  html = html.replace("</head>", css + "\n</head>");
+  html = html.replace("</body>", markerStart + "\n" + js + "\n" + markerEnd + "\n</body>");
+}
 
 fs.writeFileSync(file, html);
-console.log("Added robust collapsible dashboard sections.");
+console.log("Added collapsible dashboard sections.");
