@@ -1,32 +1,99 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#111827"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="manifest" href="./manifest.json"><link rel="apple-touch-icon" href="./icons/icon-192.png"><title>Family Chores</title><style>
-:root{--bg:#f5f6f4;--surface:#ffffff;--surface-2:#eef0ed;--text:#18201c;--muted:#69736d;--border:#dfe4df;--accent:#315c4b;--accent-dark:#244638;--success:#3f6f56;--danger:#8b4a4a;--shadow:0 8px 24px rgba(24,32,28,.07)}
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#050605"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="manifest" href="./manifest.json"><link rel="apple-touch-icon" href="./icons/icon-192.png"><title>Family Chores</title><style>
+:root{
+  --bg:#050605;--surface:#0d100e;--surface-2:#121612;--surface-3:#171c18;
+  --text:#f2f5f2;--muted:#89928c;--border:#252c27;--accent:#a7d98b;
+  --accent-dark:#2f4938;--success:#91d46f;--danger:#c77979;
+  --shadow:0 10px 30px rgba(0,0,0,.32)
+}
 *{box-sizing:border-box}
-body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);line-height:1.45}
-header{background:var(--accent-dark);color:#fff;padding:18px 22px;font-size:20px;font-weight:800;letter-spacing:-.02em;box-shadow:0 2px 12px rgba(0,0,0,.12)}
-main{max-width:1080px;margin:0 auto;padding:24px 18px 48px}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px;margin:14px 0;box-shadow:var(--shadow)}
-.card h1{margin:0 0 8px;font-size:28px;letter-spacing:-.03em}
-.card h2{margin:0 0 14px;font-size:19px;letter-spacing:-.02em}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
-label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-top:8px}
-input,select{width:100%;padding:12px 13px;margin:7px 0 12px;border:1px solid #cfd6d0;border-radius:11px;background:#fbfcfb;color:var(--text);font:inherit;outline:none;transition:border-color .15s,box-shadow .15s}
-input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(49,92,75,.12)}
-button{padding:11px 15px;border:0;border-radius:11px;font:inherit;font-weight:750;cursor:pointer;margin:4px 4px 4px 0;transition:transform .12s,box-shadow .12s,background .12s}
+html,body{min-height:100%;background:var(--bg)}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#050605;color:var(--text);line-height:1.45}
+button,input,select{font:inherit}
+header{display:none}
+main{max-width:none;margin:0;padding:0;min-height:100vh}
+#app{min-height:100vh}
+.app-shell{min-height:100vh;display:grid;grid-template-columns:244px minmax(0,1fr);background:var(--bg)}
+.sidebar{position:sticky;top:0;height:100vh;padding:22px 16px 18px;border-right:1px solid var(--border);background:#080a09;display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:12px;padding:6px 10px 28px}
+.brand-mark{width:38px;height:38px;border:1px solid #334238;border-radius:12px;background:linear-gradient(145deg,#18231c,#0d120f);display:grid;place-items:center;color:var(--accent);font-weight:900;font-size:19px}
+.brand-title{font-size:18px;font-weight:850;letter-spacing:-.03em}
+.brand-sub{font-size:10px;color:#68716b;letter-spacing:.12em;text-transform:uppercase;margin-top:2px}
+.nav{display:grid;gap:6px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 13px;border-radius:11px;color:#9da69f;font-size:14px;font-weight:650}
+.nav-item.active{background:#203226;color:#d9f1cf;box-shadow:inset 0 0 0 1px #2e4938}
+.nav-icon{width:20px;text-align:center;font-size:16px}
+.sidebar-bottom{margin-top:auto}
+.install-mini{border:1px solid #273229;background:#0f140f;border-radius:13px;padding:14px;color:#aeb7b0;font-size:12px}
+.install-mini b{display:block;color:#dce9dc;margin-bottom:3px}
+.dashboard-main{min-width:0}
+.topbar{height:76px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 34px;background:rgba(5,6,5,.92);position:sticky;top:0;z-index:5;backdrop-filter:blur(10px)}
+.eyebrow{font-size:12px;color:#707a73;text-transform:uppercase;letter-spacing:.12em;font-weight:750}
+.topbar-title{font-size:15px;font-weight:750;margin-top:2px}
+.profile{display:flex;align-items:center;gap:10px;color:#cbd2cc;font-size:13px}
+.avatar{width:34px;height:34px;border-radius:50%;background:#18221b;border:1px solid #344239;display:grid;place-items:center;color:var(--accent);font-weight:800}
+.dashboard-content{padding:30px 34px 48px;max-width:1400px;margin:0 auto}
+.welcome{border:1px solid var(--border);background:linear-gradient(135deg,#101510,#0b0e0c);border-radius:15px;padding:24px 26px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;gap:18px}
+.welcome h1{margin:0 0 5px;font-size:26px;letter-spacing:-.04em}
+.welcome p{margin:0;color:var(--muted);font-size:14px}
+.welcome-mark{width:52px;height:52px;border-radius:15px;border:1px solid #344238;background:#111912;color:var(--accent);display:grid;place-items:center;font-size:25px;font-weight:900}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.stat{border:1px solid var(--border);background:var(--surface);border-radius:13px;padding:18px 20px}
+.stat-label{color:#858e88;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.stat-value{font-size:29px;font-weight:850;letter-spacing:-.04em;margin-top:6px}
+.stat-note{color:#69736c;font-size:12px;margin-top:3px}
+.dashboard-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,.8fr);gap:18px;align-items:start}
+.main-column,.side-column{display:grid;gap:18px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:var(--shadow);margin:0}
+.card h1{margin:0 0 8px;font-size:27px;letter-spacing:-.04em}
+.card h2{margin:0 0 15px;font-size:16px;letter-spacing:-.02em}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.section-head h2{margin:0}
+.section-kicker{font-size:11px;color:#707a73;text-transform:uppercase;letter-spacing:.1em;font-weight:750}
+label{display:block;font-size:12px;font-weight:700;color:#8a948d;margin-top:9px}
+input,select{width:100%;padding:11px 12px;margin:6px 0 11px;border:1px solid #29312b;border-radius:9px;background:#090c0a;color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s}
+input::placeholder{color:#5f6862}
+input:focus,select:focus{border-color:#557a5f;box-shadow:0 0 0 3px rgba(113,157,107,.12)}
+button{padding:10px 14px;border:1px solid #2b332d;border-radius:9px;font:inherit;font-weight:750;cursor:pointer;margin:3px 4px 3px 0;transition:transform .12s,background .12s,border-color .12s}
 button:hover{transform:translateY(-1px)}
-button.primary{background:var(--accent);color:#fff;box-shadow:0 3px 8px rgba(49,92,75,.18)}
-button.primary:hover{background:var(--accent-dark)}
-button.good{background:var(--success);color:#fff}
-button.bad{background:#f3e7e7;color:var(--danger)}
-button:not(.primary):not(.good):not(.bad){background:var(--surface-2);color:var(--text)}
-.row{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:14px 0;border-top:1px solid var(--border)}
+button.primary{background:#9fd47f;color:#0b110c;border-color:#9fd47f;box-shadow:0 4px 14px rgba(120,174,95,.12)}
+button.primary:hover{background:#b1e391}
+button.good{background:#19311f;color:#bce7a6;border-color:#2c4d34}
+button.bad{background:#2a1717;color:#e3aaaa;border-color:#4b2a2a}
+button:not(.primary):not(.good):not(.bad){background:#121612;color:#c7cec8}
+.row{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:14px 0;border-top:1px solid #202720}
 .row:first-child{border-top:0}
-.row b{font-size:15px}
+.row b{font-size:14px}
 .muted{color:var(--muted)}
-.msg{padding:11px 13px;border-radius:11px;margin-top:10px;background:var(--surface-2)}
-.error{background:#f3e7e7;color:var(--danger);border:1px solid #e6caca}
-.code{font-weight:800;letter-spacing:2px;background:#edf1ee;padding:5px 9px;border-radius:8px}
-#app{min-height:360px}
-@media(max-width:600px){header{padding:16px;font-size:18px}main{padding:16px 12px 36px}.card{padding:16px;border-radius:16px}.card h1{font-size:24px}.row{align-items:flex-start;flex-direction:column}.row>div:last-child{width:100%}.row button{margin-top:6px}}
+.code{display:inline-flex;align-items:center;padding:6px 9px;border:1px solid #35443a;background:#0b100c;border-radius:7px;color:#bce5a8;font-weight:800;letter-spacing:.12em}
+.msg{padding:10px 12px;border-radius:9px;margin-top:10px;background:var(--surface-2);border:1px solid var(--border);color:#b7c0b9}
+.error{background:#241515;color:#e5aaaa;border-color:#4b2a2a}
+#logout{width:100%;margin-top:12px}
+.side-card{background:#0a0d0b}
+.quick-value{font-size:24px;font-weight:850;margin:4px 0}
+.progress{height:7px;border-radius:999px;background:#202720;overflow:hidden;margin-top:10px}
+.progress>span{display:block;height:100%;background:var(--accent);border-radius:999px}
+.empty{padding:10px 0}
+@media(max-width:900px){
+  .app-shell{grid-template-columns:1fr}
+  .sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--border);padding:12px}
+  .brand{padding:4px 6px 12px}
+  .nav{grid-template-columns:repeat(4,1fr)}
+  .nav-item{justify-content:center;padding:9px 7px;font-size:12px}
+  .nav-item .nav-label{display:none}
+  .sidebar-bottom{display:none}
+  .topbar{padding:0 18px}
+  .dashboard-content{padding:22px 16px 38px}
+}
+@media(max-width:650px){
+  .stats{grid-template-columns:1fr}
+  .dashboard-grid{grid-template-columns:1fr}
+  .welcome{padding:20px}
+  .welcome h1{font-size:23px}
+  .topbar{height:64px}
+  .row{align-items:flex-start;flex-direction:column}
+  .row>div:last-child{width:100%}
+  .row button{margin-top:6px}
+}
 </style></head><body><header>Family Chores <span id="status" style="float:right;font-size:14px;font-weight:500">Loading…</span></header><main><div id="app"><div class="card"><h1>Family Chores</h1><p class="muted">Shared chores, points, approvals, and rewards.</p><p>Starting the app…</p></div></div></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}))}</script>
 <script>
