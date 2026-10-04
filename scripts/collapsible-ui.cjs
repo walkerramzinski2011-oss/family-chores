@@ -33,8 +33,9 @@ const js = [
   "    const app = document.getElementById(\"app\");",
   "    if(!app) return;",
   "    const saved = readSaved();",
-  "    Array.from(app.children).forEach(function(card, index){",
-  "      if(!card.classList || !card.classList.contains(\"card\") || card.dataset.collapsibleReady === \"1\") return;",
+  "    const cards = Array.from(app.querySelectorAll(\".card\"));",
+  "    cards.forEach(function(card, index){",
+  "      if(card.dataset.collapsibleReady === \"1\") return;",
   "      const heading = Array.from(card.children).find(function(el){ return el.tagName === \"H2\"; });",
   "      if(!heading) return;",
   "      card.dataset.collapsibleReady = \"1\";",
@@ -96,4 +97,4 @@ if(start !== -1 && end !== -1 && end > start){
 }
 
 fs.writeFileSync(file, html);
-console.log("Added collapsible dashboard sections.");
+console.log("Added working collapsible dashboard sections.");
