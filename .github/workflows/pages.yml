@@ -25,6 +25,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Patch GitHub Pages auth configuration
         run: node scripts/patch-auth.cjs
+      - name: Apply compact UI styling
+        run: node scripts/compact-ui.cjs
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload site
