@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#050605"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="manifest" href="./manifest.json"><link rel="apple-touch-icon" href="./icons/icon-192.png"><title>Family Chores</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#050605"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="manifest" href="./manifest.json"><link rel="apple-touch-icon" href="./icons/icon-192.png"><title>Family Chores – Family Chore Tracker & Rewards</title><style>
 :root{
   --bg:#050605;--surface:#0d100e;--surface-2:#121612;--surface-3:#171c18;
   --text:#f2f5f2;--muted:#89928c;--border:#252c27;--accent:#a7d98b;
@@ -95,7 +95,16 @@ button:not(.primary):not(.good):not(.bad){background:#121612;color:#c7cec8}
   .row>div:last-child{width:100%}
   .row button{margin-top:6px}
 }
-</style><meta name="google-site-verification" content="2MSByCHKTdE8FkRnfEG7SaRATPOpj6i2kTjkUDYXIIE" /></head><body><header>Family Chores <span id="status" style="float:right;font-size:14px;font-weight:500">Loadingâ¦</span></header><main><div id="app"><div class="card"><h1>Family Chores</h1><p class="muted">Shared chores, points, approvals, and rewards.</p><p>Starting the appâ¦</p></div></div></main>
+</style><meta name="google-site-verification" content="2MSByCHKTdE8FkRnfEG7SaRATPOpj6i2kTjkUDYXIIE" /><meta name="description" content="Family Chores is a family chore tracker for assigning chores, earning points, approving completed tasks, and redeeming rewards.">
+<link rel="canonical" href="https://walkerramzinski2011-oss.github.io/family-chores/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Family Chores – Family Chore Tracker & Rewards">
+<meta property="og:description" content="A simple family chore tracker for chores, points, approvals, and rewards.">
+<meta property="og:url" content="https://walkerramzinski2011-oss.github.io/family-chores/">
+<meta property="og:site_name" content="Family Chores">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Family Chores","url":"https://walkerramzinski2011-oss.github.io/family-chores/","description":"A family chore tracker for assigning chores, earning points, approving completed tasks, and redeeming rewards.","applicationCategory":"LifestyleApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":0,"priceCurrency":"USD"}}
+</script></head><body><header>Family Chores <span id="status" style="float:right;font-size:14px;font-weight:500">Loadingâ¦</span></header><main><div id="app"><div class="card"><h1>Family Chores</h1><p class="muted">Shared chores, points, approvals, and rewards.</p><p>Starting the appâ¦</p></div></div></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}))}</script>
 <script>
 (()=>{"use strict";const URL="https://ttmjhfizzzkkhibodmaj.supabase.co",KEY="sb_publishable_fFDLRkbBmyQKs9hrP1Zi8w_9nYuZRJD";const app=document.getElementById("app"),status=document.getElementById("status");let db,session,me,family,members=[],chores=[],rewards=[],requests=[];const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));const msg=(x,e)=>'<div class="msg '+(e?"error":"")+'">'+esc(x)+'</div>';const setStatus=x=>status.textContent=x;
