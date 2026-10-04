@@ -5,8 +5,8 @@ const site = "https://walkerramzinski2011-oss.github.io/family-chores/";
 
 let html = fs.readFileSync(file, "utf8");
 
-const oldAuth = 'db=supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,storage:window.localStorage}})';
-const newAuth = 'db=supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage}})';
+const oldAuth = 'db=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,storage:window.localStorage}})';
+const newAuth = 'db=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage}})';
 
 if (!html.includes(oldAuth)) {
   throw new Error("Expected Supabase client initialization was not found; refusing to make an unsafe auth patch.");
