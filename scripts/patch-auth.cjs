@@ -15,7 +15,7 @@ if (!html.includes(oldSignUp)) throw new Error("Expected sign-up call was not fo
 html = html.replace(oldSignUp, newSignUp);
 
 const rewardFunction = /function rewardRows\(request\)\{[\s\S]*?\}\nfunction requestRows/;
-const newRewardFunction = `function rewardRows(request){if(!rewards.length)return '<p class="muted">No rewards yet.</p>';return rewards.map(r=>{let cost=Number(r.cost||0);let canAfford=Number(me?.points||0)>=cost;let action=request?'<button onclick="rewardReq(\\\''+r.id+'\\\')">Delete</button>':(canAfford?'<button class="primary" onclick="rewardReq(\\\''+r.id+'\\\')">Choose</button>':'<button disabled title="Not enough credits" style="opacity:.55;cursor:not-allowed">Need '+cost+' credits</button>');return '<div class="row"><div><b>'+esc(r.title)+'</b><div class="muted">'+cost+' points</div></div><div>'+action+'</div></div>'}).join("")}
+const newRewardFunction = `function rewardRows(request){if(!rewards.length)return '<p class="muted">No rewards yet.</p>';return rewards.map(r=>{let cost=Number(r.cost||0);let canAfford=Number(me?.points||0)>=cost;let action=request?'<button onclick="parentDeleteReward(\\\''+r.id+'\\\')">Delete</button>':(canAfford?'<button class="primary" onclick="parentDeleteReward(\\\''+r.id+'\\\')">Choose</button>':'<button disabled title="Not enough credits" style="opacity:.55;cursor:not-allowed">Need '+cost+' credits</button>');return '<div class="row"><div><b>'+esc(r.title)+'</b><div class="muted">'+cost+' points</div></div><div>'+action+'</div></div>'}).join("")}
 function requestRows`;
 if (!rewardFunction.test(html)) throw new Error("Expected reward list renderer was not found.");
 html = html.replace(rewardFunction, newRewardFunction);
