@@ -1,4 +1,4 @@
-const CACHE_NAME = "family-chores-v4";
+const CACHE_NAME = "family-chores-v5";
 const APP_SHELL = ["./","./index.html","./manifest.json","./icons/icon-192.png","./icons/icon-512.png"];
 
 self.addEventListener("install", event => {
@@ -32,7 +32,7 @@ self.addEventListener("fetch", event => {
   const isAppPage = url.pathname.endsWith("/") || url.pathname.endsWith("/index.html");
 
   if (isAppPage) {
-    event.respondWith(fetch(request).then(async response => {
+    event.respondWith(fetch(request, {cache: "no-store"}).then(async response => {
       if (!response.ok) return response;
       const transformed = await addInstallHelp(response.clone());
       const cache = await caches.open(CACHE_NAME);
