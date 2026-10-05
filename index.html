@@ -108,6 +108,31 @@ button:not(.primary):not(.good):not(.bad){background:#121612;color:#c7cec8}
 :root{--bg:#f4f7fb;--surface:#fff;--surface2:#f8faff;--text:#182235;--muted:#6f7b91;--border:#e2e8f2;--accent:#6c5ce7;--accent2:#ffb84d;--good:#27b36a;--bad:#e85b68;--shadow:0 10px 28px rgba(34,49,78,.08)}
 *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#f8faff,#eef3fb);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1200px;margin:auto;padding:22px 18px 48px}header{padding:18px 22px;background:#fff;border-bottom:1px solid var(--border);font-weight:900;letter-spacing:-.03em}#app{min-height:70vh}.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;margin:14px 0;box-shadow:var(--shadow)}.card h1{font-size:28px;letter-spacing:-.04em;margin:0 0 6px}.card h2{font-size:18px;letter-spacing:-.025em;margin:0 0 12px}.muted{color:var(--muted)}.row{padding:13px 0;border-top:1px solid #edf0f5;display:flex;align-items:center;justify-content:space-between;gap:14px}.row:first-child{border-top:0}label{font-size:12px;font-weight:800;color:#707c91}input,select{border:1px solid #dce3ee;border-radius:11px;background:#fbfcfe;padding:11px 12px;outline:none}input:focus,select:focus{border-color:#9589ef;box-shadow:0 0 0 4px rgba(108,92,231,.1)}button{border-radius:11px;border:1px solid #dce3ee;padding:10px 14px;font-weight:800;cursor:pointer;background:#f5f7fb;color:#536078;transition:.12s}button:hover{transform:translateY(-1px);box-shadow:0 5px 12px rgba(37,49,74,.09)}button.primary{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 6px 14px rgba(108,92,231,.2)}button.good{background:#e8f8ef;color:#18804a;border-color:#c8eed9}button.bad{background:#fff0f1;color:#c4414e;border-color:#ffd8dc}.msg{border-radius:11px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border)}.error{background:#fff0f1;border-color:#ffd8dc;color:#c4414e}
 @media(max-width:700px){main{padding:14px 10px 34px}.card{padding:15px;border-radius:15px}.row{align-items:flex-start;flex-direction:column}.row>div:last-child{width:100%}button{margin:3px 4px 3px 0}}
+</style>
+<style id="family-chores-polish">
+/* Cleaner app-style lists instead of document-style rows */
+.dashboard-content .card,
+.dashboard-grid .card,
+.main-column .card,
+.side-column .card{border-radius:18px}
+.row{background:#fbfcff;border:1px solid #e6eaf2;border-radius:14px!important;margin:8px 0!important;padding:13px 14px!important;box-shadow:0 3px 10px rgba(34,49,78,.045)}
+.row:first-child{border-top:1px solid #e6eaf2!important}
+.row:hover{background:#fff;box-shadow:0 6px 16px rgba(34,49,78,.08);transform:translateY(-1px)}
+.row b{font-size:15px;color:#202a3d}
+.row .muted{font-size:12px;margin-top:4px}
+.card>h2{display:flex;align-items:center;gap:8px}
+.card>h2:after{content:"";height:5px;width:5px;border-radius:50%;background:var(--accent);display:inline-block}
+.card:has(.row){padding:16px}
+button{box-shadow:none}
+button.primary{box-shadow:0 5px 12px rgba(108,92,231,.18)}
+/* Unified chore-calendar colors */
+.calendar,.chore-calendar,.choreCalendar,#calendar,.calendar-card{background:#fff!important;border:1px solid #e2e8f2!important;border-radius:18px!important;box-shadow:var(--shadow)!important;color:var(--text)!important}
+.calendar-header,.calendar-title,.calendar-toolbar,.calendar-card-header{background:#f8faff!important;color:var(--text)!important;border-color:#e2e8f2!important;border-radius:14px 14px 0 0}
+.calendar-day,.calendar-cell,.day,.calendar-grid>div{background:#fbfcff!important;border-color:#e6eaf2!important;color:var(--text)!important;border-radius:10px}
+.calendar-day:hover,.calendar-cell:hover{background:#f3f1ff!important}
+.calendar .today,.calendar-day.today,.calendar-cell.today{background:#eeeaff!important;border-color:#c9c1ff!important;color:#4e43a8!important}
+.calendar .selected,.calendar-day.selected,.calendar-cell.selected{background:var(--accent)!important;color:#fff!important;border-color:var(--accent)!important}
+.calendar .chore,.calendar-day .chore,.calendar-cell .chore{background:#eeeaff!important;color:#4e43a8!important;border:1px solid #d8d2ff!important;border-radius:8px!important}
 </style></head><body><header>Family Chores <span id="status" style="float:right;font-size:14px;font-weight:500">Loadingâ¦</span></header><main><div id="app"><div class="card"><h1>Family Chores</h1><p class="muted">Shared chores, points, approvals, and rewards.</p><p>Starting the appâ¦</p></div></div></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=5").catch(()=>{}))}</script>
 <script>
